@@ -1,7 +1,7 @@
 Welcome to Visit Data Airflow ETLP's documentation!
 ===================================================
 
-.. automodule:: visitdata.models
+.. automodule:: visitdata.models.operators.eltp_operators.py
     :members:
 
 .. toctree::
