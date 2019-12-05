@@ -1,15 +1,19 @@
 """
 Extract base classes in the ELTP process.
 """
-from visitdata.models.operators.eltp_operator import ELTPOperator
-from visitdata.models.hooks.vd_extract_hook import VDExtractHook
+from visitdata.models.operators import ELTPOperator
+from visitdata.models.hooks import VDS3Hook
+from visitdata.models.hooks.mixins import ExtractMixin
 
 
 class ExtractOperator(ELTPOperator):
     """ Base class for all extract related steps.
     """
 
-    hook: VDExtractHook = None
+    hook: ExtractMixin = None
+    """Basehook: Hook used to extract data from a specific source. The hook
+    must implement the methods in ExtractMixin.
+    """
 
     def __init__(self, hook, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -17,11 +21,18 @@ class ExtractOperator(ELTPOperator):
 
     def __fetch_data(self):
         """ Call hook to fetch data """
-        return self.hook().fetch_data()
+        return self.hook().fetch_file()
 
-    def init_process(self):
-        """ Initalize extraction process and create dataset in Database """
-        # TODO implement initialization logic
+    def __write_data(self, data):
+        """ Write data to a file """
+        # TODO implement
+        VDS3Hook().write_file()
+        raise NotImplementedError()
+
+    def __write_context(self, data):
+        """ Write context to a file """
+        # TODO implement
+        VDS3Hook().write_file()
         raise NotImplementedError()
 
     def execute_step(self):
@@ -31,6 +42,11 @@ class ExtractOperator(ELTPOperator):
         self.check_format(files)
         self.create_context(files)
 
+    def init_process(self):
+        """ Initalize extraction process and create dataset in Database """
+        # TODO implement initialization logic
+        raise NotImplementedError()
+
     def check_format(self, files):
         """ Check format of extracted files """
         raise NotImplementedError()
@@ -39,6 +55,7 @@ class ExtractOperator(ELTPOperator):
         """ Create metadata context files """
         raise NotImplementedError()
 
-    def save(self, files, context_files):
+    def save(self, data, context):
         """ Save data files and context to S3 """
-        raise NotImplementedError()
+        self.__write_data(data)
+        self.__write_context(context)

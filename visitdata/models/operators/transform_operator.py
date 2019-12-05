@@ -1,19 +1,15 @@
 """ Transform base classes in the ELTP process. """
 
 from visitdata.models.operators import ELTPOperator
-from visitdata.models.hooks import VDTransformHook, VDTransformS3Hook
+from visitdata.models.hooks import VDS3Hook
 
 
 class TransformOperator(ELTPOperator):
     """ Base class for all transform related steps.
     """
 
-    hook: VDTransformHook = VDTransformS3Hook()
-
-    def __init__(self, *args, hook=None, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if hook:
-            self.hook = hook()
 
     def __retrieve_extracted_data(self):
         """ Retrieve files from the extract step.
@@ -21,10 +17,11 @@ class TransformOperator(ELTPOperator):
             files: The data and the context files.
         """
         # TODO implementation with S3 Hook
+        VDS3Hook().fetch_file()
         return None, None
 
     def __save_transformed_data(self, data):
-        """ Save transformed data to a file.
+        """ Save transformed data to a CSV file.
         """
         # TODO save transformed data.
         raise NotImplementedError()
@@ -32,8 +29,15 @@ class TransformOperator(ELTPOperator):
     def execute_step(self):
         super().execute_step()
         data, context = self.__retrieve_extracted_data()
-        self.check_format(data)
+        transformed_data = self.transform(data, context)
+        self.check_format(transformed_data)
         self.__save_transformed_data(data)
+
+    def transform(self, data, context=None):
+        """ Transformation logic of data with optional context.
+        """
+        # TODO transform step
+        raise NotImplementedError()
 
     def check_format(self, data):
         """ Check format of transformed data.
