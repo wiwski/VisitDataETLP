@@ -5,7 +5,8 @@ from airflow.models import BaseOperator
 
 
 class ELTPOperator(BaseOperator):
-    """ Abstract class for all operators following the Extract Load Transform PostProcess pattern.
+    """ Abstract class for all operators following the 
+    Extract Load Transform PostProcess pattern.
     """
 
     datasource_id = None
