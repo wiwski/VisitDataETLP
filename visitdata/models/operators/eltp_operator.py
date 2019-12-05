@@ -1,9 +1,11 @@
+"""
+ELTP base class to use as an Airflow operator.
+"""
 from airflow.models import BaseOperator
 
 
 class ELTPOperator(BaseOperator):
-    """
-    Abstract class for all operators following the Extract Load Transform PostProcess pattern.
+    """ Abstract class for all operators following the Extract Load Transform PostProcess pattern.
     """
 
     datasource_id = None
@@ -14,7 +16,7 @@ class ELTPOperator(BaseOperator):
         # TODO implement init logic
 
     def execute(self, context):
-        """Default execute method called on operator execution """
+        """Default execute method called on operator execution. """
         try:
             self.execute_step()
             self.end_process()
@@ -50,8 +52,10 @@ class ELTPOperator(BaseOperator):
         # TODO write logs to DB.
         # TODO send logs to Sentry or whatever.
         # TODO handle via builtin log instead
+        raise NotImplementedError()
 
     def end_process(self):
         """Handle operations at the end of the ELTP step.
         Can be overriden to add data cleaning, result logging...
         """
+        raise NotImplementedError()
