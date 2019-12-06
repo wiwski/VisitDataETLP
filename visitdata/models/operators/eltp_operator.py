@@ -19,12 +19,12 @@ class ELTPOperator(BaseOperator):
     def execute(self, context):
         """Default execute method called on operator execution. """
         try:
-            self.execute_step()
+            self.__execute_step()
             self.end_process()
         except Exception as error:
             self.on_error(error)
 
-    def execute_step(self):
+    def __execute_step(self):
         """Execution of one of the ELTP step.
         Returns:
             bool: Outcome of the execution.

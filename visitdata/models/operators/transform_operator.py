@@ -26,7 +26,7 @@ class TransformOperator(ELTPOperator):
         # TODO save transformed data.
         raise NotImplementedError()
 
-    def execute_step(self):
+    def __execute_step(self):
         super().execute_step()
         data, context = self.__retrieve_extracted_data()
         transformed_data = self.transform(data, context)
@@ -36,7 +36,6 @@ class TransformOperator(ELTPOperator):
     def transform(self, data, context=None):
         """ Transformation logic of data with optional context.
         """
-        # TODO transform step
         raise NotImplementedError()
 
     def check_format(self, data):
@@ -48,8 +47,4 @@ class TransformOperator(ELTPOperator):
 
     def create_context(self, files):
         """ Create metadata context files. """
-        raise NotImplementedError()
-
-    def save(self, files, context_files):
-        """ Save data files and context to S3. """
         raise NotImplementedError()

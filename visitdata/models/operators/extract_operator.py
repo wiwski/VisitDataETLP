@@ -12,7 +12,8 @@ class ExtractOperator(ELTPOperator):
 
     hook: ExtractMixin = None
     """Basehook: Hook used to extract data from a specific source. The hook
-    must implement the methods in ExtractMixin.
+    must implement the methods in
+    :class:`.visitdata.models.hooks.mixins.ExtractMixin`.
     """
 
     def __init__(self, hook, *args, **kwargs):
@@ -35,12 +36,15 @@ class ExtractOperator(ELTPOperator):
         VDS3Hook().write_file()
         raise NotImplementedError()
 
-    def execute_step(self):
+    def __execute_step(self):
         super().execute_step()
         self.init_process()
         files = self.__fetch_data()
         self.check_format(files)
-        self.create_context(files)
+        for file in files:
+            context = self.create_context(file)
+            self.__write_data(file)
+            self.__write_context(context)
 
     def init_process(self):
         """ Initalize extraction process and create dataset in Database """

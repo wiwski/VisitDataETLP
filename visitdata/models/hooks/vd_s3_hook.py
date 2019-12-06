@@ -8,7 +8,7 @@ class VDS3Hook(S3Hook):
     """
 
     def get_conn(self):
-        """Connect to the Database and get the credentials used 
+        """Connect to the Database and get the credentials used
         to connect to the service.
         """
         raise NotImplementedError()

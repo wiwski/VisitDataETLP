@@ -9,3 +9,17 @@ class ExtractMixin:
         source and extract the data.
         """
         raise NotImplementedError()
+
+
+class LoadMixin:
+    """ Expose methods to load data during extract process """
+
+    def load(self):
+        """ Describe how to load data into a database.
+        """
+        raise NotImplementedError()
+
+    def unload(self):
+        """ Describe how to unload data out of a database.
+        """
+        raise NotImplementedError()
