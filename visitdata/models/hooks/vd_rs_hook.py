@@ -1,8 +1,9 @@
 """ Classes used to retrieve and write data with S3 """
-from airflow.hooks.S3_hook import S3Hook
+from airflow.contrib.hooks.redshift_hook import RedshiftHook
+from visitdata.models.hooks.mixins import VDDBMixin
 
 
-class VDS3Hook(S3Hook):
+class VDRSHook(RedshiftHook, VDDBMixin):
     """ Interact with Visit Data AWS S3, to read and write data.
     """
 
@@ -12,11 +13,14 @@ class VDS3Hook(S3Hook):
         """
         raise NotImplementedError()
 
-    def fetch_file(self):
-        """Fetch data file from S3."""
-        # TODO implement
+    def load(self):
+        """Load data into DB."""
         raise NotImplementedError()
 
-    def write_file(self):
-        """Write data file to S3."""
+    def unload(self):
+        """Unload data into DB."""
+        raise NotImplementedError()
+
+    def retrieve(self):
+        """ Retrieve data from DB"""
         raise NotImplementedError()

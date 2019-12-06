@@ -11,8 +11,8 @@ class ExtractMixin:
         raise NotImplementedError()
 
 
-class LoadMixin:
-    """ Expose methods to load data during extract process """
+class VDDBMixin:
+    """ Expose methods to load, unload and retrieve data in a Database """
 
     def load(self):
         """ Describe how to load data into a database.
@@ -21,5 +21,10 @@ class LoadMixin:
 
     def unload(self):
         """ Describe how to unload data out of a database.
+        """
+        raise NotImplementedError()
+
+    def retrieve(self):
+        """ Describe how to retrieve data in a database.
         """
         raise NotImplementedError()

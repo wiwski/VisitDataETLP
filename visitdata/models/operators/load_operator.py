@@ -2,16 +2,16 @@
 
 from visitdata.models.operators import ELTPOperator
 from visitdata.models.hooks import VDS3Hook
-from visitdata.models.hooks.mixins import LoadMixin
+from visitdata.models.hooks.mixins import VDDBMixin
 
 
 class LoadOperator(ELTPOperator):
     """Base class for all load related steps."""
 
-    hook: LoadMixin = None
+    hook: VDDBMixin = None
     """Basehook: Hook used to load and unload data from a database. The hook
     must implement the methods in
-    :class:`.visitdata.models.hooks.mixins.LoadMixin`.
+    :class:`.visitdata.models.hooks.mixins.VDDBMixin`.
     """
 
     def __init__(self, hook, *args, **kwargs):
