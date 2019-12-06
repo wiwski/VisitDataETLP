@@ -34,10 +34,10 @@ class PostProcessOperator(ELTPOperator):
         data = self.hook.retrieve()
         return data
 
-    def post_process(self, data):
-        """ Post process data """
-        raise NotImplementedError()
-
     def __load_post_processed_data(self, data):
         """ Load post-processed data """
         self.hook.load()
+
+    def post_process(self, data):
+        """ Post process data """
+        raise NotImplementedError()

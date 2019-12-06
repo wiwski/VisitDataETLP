@@ -4,7 +4,7 @@ from visitdata.models.hooks.mixins import VDDBMixin
 
 
 class VDRSHook(RedshiftHook, VDDBMixin):
-    """ Interact with Visit Data AWS S3, to read and write data.
+    """ Interact with Visit Data Redshift, to read and write data.
     """
 
     def get_conn(self):
