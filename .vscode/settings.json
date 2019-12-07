@@ -1,8 +1,0 @@
-{
-    "python.pythonPath": "env/bin/python",
-    "python.linting.pylintEnabled": true,
-    "python.linting.enabled": true,
-    "python.linting.pycodestyleEnabled": true,
-    "python.linting.pylintUseMinimalCheckers": false,
-    "editor.formatOnSave": true
-}
