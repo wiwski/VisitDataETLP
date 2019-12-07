@@ -1,9 +1,12 @@
 """VisitData Airflow settings module.
 """
 import os
+import json
 from dotenv import load_dotenv
 from airflow import settings
 from airflow.models import Connection
+
+from .models.hooks import VDS3Hook
 
 # Load environment variables from .env file
 load_dotenv()
@@ -14,7 +17,8 @@ VD_S3_CONNECTION = Connection(
     conn_id="VD_S3",
     conn_type="s3",
     login=os.getenv('VD_S3_ACCESS_KEY'),
-    password=os.getenv('VD_S3_SECRET_KEY'))
+    password=os.getenv('VD_S3_SECRET_KEY'),
+    extra=json.dumps({"default_bucket": os.getenv('VD_S3_DEFAULT_BUCKET')}))
 session = settings.Session()
 # Removing old connections as Airflow save
 session.query(Connection).filter(Connection.conn_id == VD_S3_CON_ID).delete()
