@@ -2,14 +2,15 @@
 ELTP base class to use as an Airflow operator.
 """
 from airflow.models import BaseOperator
+from visitdata.models.hooks import VDDataflowHook
 
 
 class ELTPOperator(BaseOperator):
-    """ Abstract class for all operators following the 
+    """ Abstract class for all operators following the
     Extract Load Transform PostProcess pattern.
     """
 
-    datasource_id = None
+    datasource = None
 
     def __init__(self, datahub_task_id, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -39,9 +40,9 @@ class ELTPOperator(BaseOperator):
         Returns:
             dict: Datasource object with information about the datasource.
         """
-        # TODO set datasource_id after fetching with datahubtask_id.
-        self.datasource_id = None
-        return {}
+        self.datasource = VDDataflowHook().retrieve_datasource(
+            self.datahub_task_id
+        )
 
     def on_error(self, error):
         """Handle error on operator execution. """

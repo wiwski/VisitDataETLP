@@ -22,7 +22,7 @@ class ExtractOperator(ELTPOperator):
 
     def __fetch_data(self):
         """ Call hook to fetch data """
-        return self.hook().fetch_file()
+        return self.hook().fetch_data()
 
     def __write_data(self, data):
         """ Write data to a file """
@@ -45,6 +45,7 @@ class ExtractOperator(ELTPOperator):
             context = self.create_context(file)
             self.__write_data(file)
             self.__write_context(context)
+        return True
 
     def init_process(self):
         """ Initalize extraction process and create dataset in Database """

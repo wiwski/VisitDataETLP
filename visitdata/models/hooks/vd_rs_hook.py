@@ -1,17 +1,20 @@
 """ Classes used to retrieve and write data with S3 """
-from airflow.contrib.hooks.redshift_hook import RedshiftHook
+from airflow.hooks.postgres_hook import PostgresHook
+from sqlalchemy.orm import sessionmaker
 from visitdata.models.hooks.mixins import VDDBMixin
 
 
-class VDRSHook(RedshiftHook, VDDBMixin):
+class VDRSHook(PostgresHook, VDDBMixin):
     """ Interact with Visit Data Redshift, to read and write data.
     """
 
-    def get_conn(self):
-        """Connect to the Database and get the credentials used
-        to connect to the service.
-        """
-        raise NotImplementedError()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.postgres_conn_id = "VD_RS"
+
+    def create_session(self):
+        engine = self.get_sqlalchemy_engine()
+        return sessionmaker(bind=engine)()
 
     def load(self):
         """Load data into DB."""
