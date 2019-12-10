@@ -1,4 +1,5 @@
 """ Classes used to retrieve and write data with S3 """
+import json
 from fnmatch import fnmatch
 
 from airflow.hooks.S3_hook import S3Hook
@@ -80,11 +81,16 @@ class VDS3Hook(S3Hook, ExtractMixin):
         files = [self.get_key(key, bucket_name) for key in filtered_keys]
         return files
 
-    def fetch_file(self):
-        """Fetch data file from S3."""
-        # TODO implement
-        raise NotImplementedError()
-
-    def write_file(self):
-        """Write data file to S3."""
-        raise NotImplementedError()
+    def write_context(
+            self,
+            context: dict,
+            key: str,
+            bucket_name: str = None
+    ):
+        """Write context data to s3."""
+        if not bucket_name:
+            bucket_name = self.default_bucket
+        self.load_string(
+            string_data=json.dumps(context),
+            key=key,
+            bucket_name=bucket_name)

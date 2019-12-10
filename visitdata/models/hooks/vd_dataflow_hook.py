@@ -1,7 +1,7 @@
 """ Classes used to retrieve tasks and data sources information necessary
 to run Airflow and the ELTP processes.
 """
-from visitdata.models.sources import DataTask
+from visitdata.models.sources import DataTask, DatasourceDataset
 
 from visitdata.models.hooks import VDRSHook
 
@@ -16,4 +16,23 @@ class VDDataflowHook(VDRSHook):
         session = self.create_session()
         task = session.query(DataTask).filter(
             DataTask.id == datatask_id).first()
+        # session.close()
         return task.datasource
+
+    def save_dataset(self, dataset: DatasourceDataset) -> DatasourceDataset:
+        """ Insert a datasource_dataset to the DB.
+
+        Arguments:
+            dataset {:class:`visitdata.models.sources.DatasourceDataset`}
+                -- The :class:`visitdata.models.sources.DatasourceDataset`
+                to save.
+
+        Returns:
+            :class:`visitdata.models.sources.DatasourceDataset` -- The
+                created datasource_dataset.
+        """
+        session = self.create_session()
+        session.add(dataset)
+        session.commit()
+        session.close()
+        return dataset

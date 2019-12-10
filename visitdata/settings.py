@@ -23,7 +23,7 @@ CONNECTIONS = [
 
     Connection(
         conn_id="VD_RS",
-        conn_type="redshift",
+        conn_type="redshift+psycopg2",
         host=os.getenv('VD_RS_HOST'),
         login=os.getenv('VD_RS_USERNAME'),
         password=os.getenv('VD_RS_PASSWORD'),

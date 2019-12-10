@@ -2,6 +2,8 @@
 across multiple protocols (S3, API, FTP, etc.)."""
 import os
 import boto3
+from datetime import datetime, timezone
+from visitdata.models.sources import DatasourceProtocol, DatasourceDataset
 
 
 class VDDataset():
@@ -18,6 +20,10 @@ class VDDataset():
     def save_to_s3(self, *args, **kwargs):
         """ Handle converting data to a file """
         raise NotImplementedError()
+
+    def to_datasource_dataset(
+            self, protocol: DatasourceProtocol) -> DatasourceDataset:
+        raise NotImplementedError
 
 
 class S3VDDataset(VDDataset):
@@ -62,3 +68,14 @@ class S3VDDataset(VDDataset):
         # pylint: disable=no-member
         bucket = VDS3Hook().get_bucket(bucket_dest)
         bucket.copy(copy_source, key_dest)
+
+    def to_datasource_dataset(
+            self, protocol: DatasourceProtocol) -> DatasourceDataset:
+        return DatasourceDataset(
+            organisation_id=protocol.organisation_id,
+            datasource_protocol_id=protocol.id,
+            # data_path_source=protocol.generate_datalake_path(
+            #    suffix=self.name),
+            data_path_archive=getattr(self, 'key'),
+            process_e_timestamp=datetime.now(timezone.utc)
+        )
