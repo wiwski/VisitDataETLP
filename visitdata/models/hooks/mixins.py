@@ -4,9 +4,11 @@
 class ExtractMixin:
     """ Expose methods to fetch data during extract process """
 
-    def fetch_data(self):
+    def fetch_data(self, *args, **kwargs) -> list:
         """ Describe how to connect to an external
         source and extract the data.
+        Returns:
+            (list) A list of :class:`visitdata.models.datasets.VDDataset`.
         """
         raise NotImplementedError()
 

@@ -1,6 +1,8 @@
 """
 ELTP base class to use as an Airflow operator.
 """
+from abc import abstractmethod
+
 from airflow.models import BaseOperator
 from visitdata.models.hooks import VDDataflowHook
 
@@ -20,18 +22,17 @@ class ELTPOperator(BaseOperator):
     def execute(self, context):
         """Default execute method called on operator execution. """
         try:
-            self.__execute_step()
+            self.fetch_datasource()
+            self.execute_step()
             self.end_process()
         except Exception as error:
             self.on_error(error)
 
-    def __execute_step(self):
+    @abstractmethod
+    def execute_step(self):
         """Execution of one of the ELTP step.
-        Returns:
-            bool: Outcome of the execution.
         """
-        self.fetch_datasource()
-        return True
+        raise NotImplementedError()
 
     def fetch_datasource(self) -> dict:
         """Fetch datasource information from DataTask.

@@ -6,8 +6,6 @@ from dotenv import load_dotenv
 from airflow import settings
 from airflow.models import Connection
 
-from visitdata.models.hooks.vd_rs_hook import VDRSHook
-
 # Load environment variables from .env file
 load_dotenv()
 
@@ -44,3 +42,9 @@ for conn in CONNECTIONS:
     session.commit()
 
 session.close()
+
+# Set S3 prefixes for FTP & DataLake
+os.environ["VD_S3_FTP_PREFIX"] = os.getenv(
+    "VD_S3_FTP_PREFIX", "FileServer/Ftp")
+os.environ["VD_S3_DATALAKE_PREFIX"] = os.getenv(
+    "VD_S3_DATALAKE_PREFIX", "Datalake/Datahub")
