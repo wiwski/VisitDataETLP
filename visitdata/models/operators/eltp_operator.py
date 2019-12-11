@@ -17,12 +17,13 @@ class ELTPOperator(BaseOperator):
         _datasource_hook (:class:`visitdata.models.hooks.VDDataflowHook`):
             Communication hook between the app and the Datasource DB.
     """
-    _datasource_hook = VDDataflowHook
+    _datasource_hook_class = VDDataflowHook
 
     datasource = None
 
     def __init__(self, datahub_task_id, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self._datasource_hook = self._datasource_hook_class()
         self.datahub_task_id = datahub_task_id
         # TODO implement init logic
 
@@ -48,7 +49,7 @@ class ELTPOperator(BaseOperator):
         Returns:
             dict: Datasource object with information about the datasource.
         """
-        self.datasource = self._datasource_hook().retrieve_datasource(
+        self.datasource = self._datasource_hook.retrieve_datasource(
             self.datahub_task_id
         )
 

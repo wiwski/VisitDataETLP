@@ -11,12 +11,14 @@ class VDDataflowHook(VDRSHook):
     about Airflow tasks, VisitData data sources, and ETLP processes.
     """
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._session = self.create_session()
+
     def retrieve_datasource(self, datatask_id):
         """ Retrieve a datasource object."""
-        session = self.create_session()
-        task = session.query(DataTask).filter(
+        task = self._session.query(DataTask).filter(
             DataTask.id == datatask_id).first()
-        # session.close()
         return task.datasource
 
     def save_dataset(self, dataset: DatasourceDataset) -> DatasourceDataset:
@@ -31,8 +33,10 @@ class VDDataflowHook(VDRSHook):
             :class:`visitdata.models.sources.DatasourceDataset` -- The
                 created datasource_dataset.
         """
-        session = self.create_session()
-        session.add(dataset)
-        session.commit()
-        session.close()
+        self._session.add(dataset)
+        self._session.commit()
         return dataset
+
+    def update_dataset(self, dataset: DatasourceDataset):
+        self._session.add(dataset)
+        self._session.commit()

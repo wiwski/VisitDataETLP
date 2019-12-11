@@ -25,16 +25,13 @@ class ExtractOperator(ELTPOperator):
 
     hook: ExtractMixin = None
 
-    __datasource_hook = VDRSHook
-
     def __init__(self, *args, hook=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.hook = hook or VDS3Hook
 
-    def __create_dataset(
-            self, protocol: DatasourceProtocol,
-            file: VDDataset
-    ) -> DatasourceDataset:
+    def __create_dataset(self,
+                         protocol: DatasourceProtocol,
+                         file: VDDataset) -> DatasourceDataset:
         """Create a datasource_dataset in the DB to store
         information about the process.
 
@@ -46,9 +43,12 @@ class ExtractOperator(ELTPOperator):
             :class:`visitdata.models.sources.DatasourceDataset` --
                 The saved dataset with an id.
         """
-        return self._datasource_hook().save_dataset(
+        return self._datasource_hook.save_dataset(
             file.to_datasource_dataset(protocol=protocol)
         )
+
+    def __update_dataset(self, dataset: DatasourceDataset):
+        self._datasource_hook.update_dataset(dataset)
 
     def __fetch_data(self, protocol: DatasourceProtocol):
         """ Call hook to fetch data.
@@ -64,42 +64,33 @@ class ExtractOperator(ELTPOperator):
         )
 
     def __write_data(
-            self,
-            protocol: DatasourceProtocol,
-            file: VDDataset,
-            dataset_id: str):
+            self, file: VDDataset, dest_folder: str):
         """ Write data to a file """
         file.save_to_s3(
-            key_dest=protocol.generate_datalake_path(
-                dataset_id=dataset_id,
-                step="extract",
-                suffix=file.name))
+            key_dest=f"{dest_folder}/{file.name}")
 
     def __write_context(
             self,
             context: dict,
-            protocol: DatasourceProtocol,
-            dataset_id: str):
+            dest_folder: str):
         """ Write context to a file """
-        # TODO implement
-        key = protocol.generate_datalake_path(
-            dataset_id=dataset_id,
-            step="extract",
-            suffix="context.json")
-        VDS3Hook().write_context(context=context, key=key)
+        VDS3Hook().write_context(
+            context=context, key=f"{dest_folder}/context.json")
 
     def execute_step(self):
-        self.init_process()
         for protocol in self.datasource.protocols:
             files = self.__fetch_data(protocol)
             for file in files:
                 self.check_format(file)
                 dataset = self.__create_dataset(protocol, file)
                 context = self.create_context(file)
-                self.__write_data(
-                    protocol=protocol, file=file, dataset_id=dataset.id)
-                self.__write_context(
-                    context=context, protocol=protocol, dataset_id=dataset.id)
+                dest_folder = protocol.generate_datalake_path(
+                    dataset_id=dataset.id,
+                    step="extract")
+                self.__write_data(file=file, dest_folder=dest_folder)
+                self.__write_context(context=context, dest_folder=dest_folder)
+                dataset.data_path_source = dest_folder
+                self.__update_dataset(dataset)
         return True
 
     @abstractmethod
