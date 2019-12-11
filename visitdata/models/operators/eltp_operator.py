@@ -17,15 +17,18 @@ class ELTPOperator(BaseOperator):
         _datasource_hook (:class:`visitdata.models.hooks.VDDataflowHook`):
             Communication hook between the app and the Datasource DB.
     """
+
     _datasource_hook_class = VDDataflowHook
 
     datasource = None
 
+    process_type = "N/A"
+
     def __init__(self, datahub_task_id, *args, **kwargs):
+        self.log.info("Beginning DataTask %s.", datahub_task_id)
         super().__init__(*args, **kwargs)
         self._datasource_hook = self._datasource_hook_class()
         self.datahub_task_id = datahub_task_id
-        # TODO implement init logic
 
     def execute(self, context):
         """Default execute method called on operator execution. """
@@ -69,4 +72,5 @@ class ELTPOperator(BaseOperator):
         """Handle operations at the end of the ELTP step.
         Can be overriden to add data cleaning, result logging...
         """
-        raise NotImplementedError()
+        self.log.info("DataTask %s %s process terminated.",
+                      self.datahub_task_id, self.process_type)

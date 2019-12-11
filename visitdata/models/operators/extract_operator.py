@@ -27,6 +27,8 @@ class ExtractOperator(ELTPOperator):
 
     def __init__(self, *args, hook=None, **kwargs):
         super().__init__(*args, **kwargs)
+        self.log.info("Doing extract.")
+        self.process_type = "extract"
         self.hook = hook or VDS3Hook
 
     def __create_dataset(self,
@@ -109,8 +111,12 @@ class ExtractOperator(ELTPOperator):
         self.__write_data(file=file, dest_folder=dest_folder)
         self.__write_context(context=context, dest_folder=dest_folder)
 
+    def end_process(self):
+        super().end_process()
+        self.log.info("Extract process ended.")
+
     @abstractmethod
-    def check_format(self, file: VDDataset):
+    def check_format(self, file: VDDataset) -> bool:
         """ Check format of extracted files """
         raise NotImplementedError()
 

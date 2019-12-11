@@ -73,7 +73,7 @@ class DatasourceProtocol(Base):
             str -- A path where the file should be.
         """
         path = (f"{os.getenv('VD_S3_DATALAKE_PREFIX')}"
-                f"/{self.datasource_id}"
+                f"/datasource-{self.datasource_id}"
                 f"/{dataset_id}"
                 f"/{step}")
         if suffix:
