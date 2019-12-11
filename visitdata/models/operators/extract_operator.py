@@ -38,7 +38,8 @@ class ExtractOperator(ELTPOperator):
         Arguments:
             protocol_id {DatasourceProtocol} -- The ID of the
                 datasource_protocol.
-            file {VDDataset} -- Extracted file
+            file {:class:`visitdata.models.datasets.VDDataset`}
+                -- Extracted file
         Returns:
             :class:`visitdata.models.sources.DatasourceDataset` --
                 The saved dataset with an id.
@@ -81,17 +82,32 @@ class ExtractOperator(ELTPOperator):
         for protocol in self.datasource.protocols:
             files = self.__fetch_data(protocol)
             for file in files:
-                self.check_format(file)
+                is_valid = self.check_format(file)
+                if not is_valid:
+                    # TODO better not valid file exception handling
+                    raise Exception(f"File {file.name} invalid.")
                 dataset = self.__create_dataset(protocol, file)
                 context = self.create_context(file)
                 dest_folder = protocol.generate_datalake_path(
                     dataset_id=dataset.id,
                     step="extract")
-                self.__write_data(file=file, dest_folder=dest_folder)
-                self.__write_context(context=context, dest_folder=dest_folder)
+                self.save_file_and_context(file, context, dest_folder)
                 dataset.data_path_source = dest_folder
                 self.__update_dataset(dataset)
         return True
+
+    def save_file_and_context(self, file, context, dest_folder):
+        """ Save data file and context to S3. 
+
+        Arguments:
+            file {:class:`visitdata.models.datasets.VDDataset`}
+                -- Data file created from extraction.
+            context {dict} -- A dict object containing context. Will be
+                saved to json format.
+            dest_folder {str} -- Destination folder (i.e key) in Datalake S3
+        """
+        self.__write_data(file=file, dest_folder=dest_folder)
+        self.__write_context(context=context, dest_folder=dest_folder)
 
     @abstractmethod
     def check_format(self, file: VDDataset):
@@ -102,8 +118,3 @@ class ExtractOperator(ELTPOperator):
     def create_context(self, file: VDDataset) -> dict:
         """ Create metadata context files """
         raise NotImplementedError()
-
-    def save(self, data, context):
-        """ Save data files and context to S3 """
-        self.__write_data(data)
-        self.__write_context(context)
