@@ -46,11 +46,15 @@ class ExtractOperator(ELTPOperator):
             :class:`visitdata.models.sources.DatasourceDataset` --
                 The saved dataset with an id.
         """
+        self.log.info("Protocol %s: creating dataset for file %s",
+                      protocol.id,
+                      file.name)
         return self._datasource_hook.save_dataset(
             file.to_datasource_dataset(protocol=protocol)
         )
 
     def __update_dataset(self, dataset: DatasourceDataset):
+        self.log.info("Extraction process: Updating dataset %s", dataset.id)
         self._datasource_hook.update_dataset(dataset)
 
     def __fetch_data(self, protocol: DatasourceProtocol):
@@ -60,11 +64,19 @@ class ExtractOperator(ELTPOperator):
             file_path {:class:`visitdata.models.sources.DatasourceProtocol`}
                 -- The file path as defined in the datasource protocol.
         """
+        self.log.info("Protocol %s: Fetching data at %s with mask %s",
+                      protocol.id,
+                      protocol.source_path,
+                      protocol.data_file)
         # TODO: handle multi source
         return self.hook().fetch_data(
             path=protocol.source_path,
             mask=protocol.data_file
         )
+
+    def __remove_source_data(self, file: VDDataset):
+        self.log.info("Cleaning source data...")
+        file.remove_source()
 
     def __write_data(
             self, file: VDDataset, dest_folder: str):
@@ -81,7 +93,16 @@ class ExtractOperator(ELTPOperator):
             context=context, key=f"{dest_folder}/context.json")
 
     def execute_step(self):
-        for protocol in self.datasource.protocols:
+        protocol: DatasourceProtocol
+        for protocol in getattr(self.datasource, 'protocols', []):
+            if not protocol.should_execute:
+                self.log.info("Skipping extract protocol %s of datasource %s "
+                              "with period %s",
+                              protocol.id,
+                              self.datasource.id,
+                              protocol.protocol_period)
+                continue
+            self.log.info("Starting extraction protocol # %s", protocol.id)
             files = self.__fetch_data(protocol)
             for file in files:
                 is_valid = self.check_format(file)
@@ -96,6 +117,7 @@ class ExtractOperator(ELTPOperator):
                 self.save_file_and_context(file, context, dest_folder)
                 dataset.data_path_source = dest_folder
                 self.__update_dataset(dataset)
+                self.__remove_source_data(file)
         return True
 
     def save_file_and_context(self, file, context, dest_folder):
@@ -108,6 +130,7 @@ class ExtractOperator(ELTPOperator):
                 saved to json format.
             dest_folder {str} -- Destination folder (i.e key) in Datalake S3
         """
+        self.log.info("Saving file and context for file {}.", file.name)
         self.__write_data(file=file, dest_folder=dest_folder)
         self.__write_context(context=context, dest_folder=dest_folder)
 

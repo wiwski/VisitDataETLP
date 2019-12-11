@@ -1,8 +1,9 @@
 """ Classes to provide a common API for different data objects (files, bytes)
 across multiple protocols (S3, API, FTP, etc.)."""
 import os
-import boto3
+from abc import abstractmethod
 from datetime import datetime, timezone
+
 from visitdata.models.sources import DatasourceProtocol, DatasourceDataset
 
 
@@ -17,12 +18,22 @@ class VDDataset():
         # NOTE: name should be optionnal (for example: API)?
         self.name = name
 
+    @abstractmethod
     def save_to_s3(self, *args, **kwargs):
         """ Handle converting data to a file """
         raise NotImplementedError()
 
+    @abstractmethod
+    def remove_source(self):
+        """ Removes itself from source location, if possible. """
+        raise NotImplementedError()
+
+    @abstractmethod
     def to_datasource_dataset(
             self, protocol: DatasourceProtocol) -> DatasourceDataset:
+        """ Convert to a
+            :class:`visitdata.models.sources.DatasourceDataset`.
+        """
         raise NotImplementedError
 
 
@@ -31,9 +42,11 @@ class S3VDDataset(VDDataset):
 
     @staticmethod
     def init_from_s3_object(s3_object):
+        """ Init S3VDDataset from a s3 object classes
+        because s3 Object is a type created on the fly.
+        """
         # TODO: document
-        # Add S3VDDataset to s3 object classes because s3 Object is a
-        # type created on the fly
+
         s3_object.__class__ = type(
             "VDS3Object", (S3VDDataset, type(s3_object)), {})
         _, s3_object.name = os.path.split(s3_object.key)
@@ -68,6 +81,9 @@ class S3VDDataset(VDDataset):
         # pylint: disable=no-member
         bucket = VDS3Hook().get_bucket(bucket_dest)
         bucket.copy(copy_source, key_dest)
+
+    def remove_source(self):
+        getattr(self, 'delete')()
 
     def to_datasource_dataset(
             self, protocol: DatasourceProtocol) -> DatasourceDataset:

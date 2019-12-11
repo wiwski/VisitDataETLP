@@ -1,7 +1,9 @@
 """ Class declarations for SQLAlchemy to orchestrate tasks and datasources.
 """
 import os
+from datetime import datetime
 from uuid import uuid4
+from cronex import CronExpression
 from sqlalchemy import Boolean, Column, Integer, String, ForeignKey, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
@@ -52,6 +54,21 @@ class DatasourceProtocol(Base):
 
     datasource = relationship("Datasource", back_populates="protocols")
     datasets = relationship("DatasourceDataset", back_populates="protocol")
+
+    @property
+    def should_execute(self) -> bool:
+        """ Compares cron expression defined in protocol_period
+        with current time. Used to determine if the extraction
+        process should be executed.
+        Returns true if protocol_period value is not set.
+
+        Returns:
+            bool -- True if the extract process should be executed.
+        """
+        if not self.protocol_period:
+            return True
+        cexpr = CronExpression(self.protocol_period)
+        return cexpr.check_trigger(datetime.now().timetuple()[0:5])
 
     @property
     def source_path(self):
